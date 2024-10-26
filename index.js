@@ -1,23 +1,27 @@
-require('dotenv').config();  // Corrected from 'dotnev' to 'dotenv'
+const express = require('express');
+const cors = require('cors'); // Import CORS
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser'); // Correct import
+const server = express();
 
-const express = require("express");
-const workoutRoutes= require('./routes/workout')
+server.use(cors());
+server.use(bodyParser.json()); // Correct initialization
 
+server.post('/demo', (req, res) => {
+    console.log(req.body);
+    res.send(req.body);
 
-
-const app = express();
-
-app.use(express.json())
-app.use((req, res, next) => {
-    console.log(req.path, req.method);
-    next();
 });
 
+// Optionally, you can add a GET endpoint for testing
+server.get('/demo', (req, res) => {
+    res.send('GET request received');
+});
 
-app.use('/api/workouts',workoutRoutes)
-
-
-
-app.listen(process.env.PORT, () => {
-    console.log('listening on port ', process.env.PORT);
-})
+server.listen(8080, (err) => {
+    if (err) {
+        console.error('Error starting server:', err);
+        return;
+    }
+    console.log('Server started on port 8080');
+});
