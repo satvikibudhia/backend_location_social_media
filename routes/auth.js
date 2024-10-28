@@ -8,7 +8,6 @@ const router = express.Router();
 router.get(
   "/google",
   (req, res, next) => {
-    // Store the authentication flow (signup or login)
     const authFlow = req.query.flow || "login";
     req.session.authFlow = authFlow;
     next();
@@ -18,26 +17,37 @@ router.get(
   })
 );
 
-// Google callback route
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   async (req, res) => {
     try {
-      // New user or login flow
       if (req.session.authFlow === "signup") {
-        req.session.authFlow = null; // Clear authFlow after use
-        return res.redirect("/signup/complete");
+        req.session.authFlow = null; 
+        const user = await User.findById(req.user._id); 
+        if (user) {
+          if (user.type === 'admin') {
+            return res.redirect("http://localhost:3000/admin"); 
+          } else {
+            return res.redirect("http://localhost:3000/dashboard"); 
+          }
+        }
       }
-
-      // Otherwise, proceed to profile (login flow)
-      res.redirect("http://localhost:3000/dashboard");
+      const user = await User.findById(req.user._id); 
+      if (user) {
+        if (user.type === 'admin') {
+          return res.redirect("http://localhost:3000/admin"); 
+        } else {
+          return res.redirect("http://localhost:3000/dashboard"); 
+        }
+      }
     } catch (error) {
       console.error("Error during Google callback:", error);
       res.redirect("/login?error=Something went wrong, please try again");
     }
   }
 );
+
 
 // Complete signup route
 router.post("/complete-signup", async (req, res) => {
@@ -70,16 +80,21 @@ router.post("/complete-signup", async (req, res) => {
 });
 
 // Get user data for completing signup
-router.get("/signup/user-data", (req, res) => {
-  if (!req.user) {
-    return res.status(401).json({ error: "Not authenticated" });
+// Fetch user data after successful Google auth
+router.get('/auth/signup/user-data', async (req, res) => {
+  if (req.isAuthenticated()) {
+      const user = req.user; // Assuming user is attached to req by passport
+      return res.json({
+          name: user.name,
+          email: user.email,
+          profilePic: user.profilePic,
+          type: user.type, // Include user type
+      });
   }
-  res.json({
-    name: req.user.name,
-    email: req.user.email,
-    profilePic: req.user.profilePic,
-  });
+  return res.status(401).json({ error: 'Not authenticated' });
 });
+
+
 
 // Logout route
 router.get("/logout", (req, res) => {
