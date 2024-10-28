@@ -1,27 +1,70 @@
 // index.js
-const express = require("express");
-const cors = require("cors");
-const connectDB = require("./config/db");
-const userRoutes = require("./routes/userRoutes");
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const session = require('express-session');
+const passport = require('passport');
+const cors = require('cors');
+const MongoStore = require('connect-mongo');
+const authRoutes = require('./routes/auth');
+require('./config/passport-setup');
 
-const server = express();
-const PORT = process.env.PORT || 8080;
+const app = express();
 
-// Connect to MongoDB
-connectDB();
+// CORS configuration - MUST COME BEFORE OTHER MIDDLEWARE
+app.use(cors({
+    origin: 'http://localhost:3000', // Your React app URL
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-// Middleware
-server.use(cors());
-server.use(express.json());
+// Body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Session configuration
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'your_session_secret',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+        collectionName: 'sessions'
+    }),
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        httpOnly: true,
+        secure: false, // set to true in production with HTTPS
+        sameSite: 'lax'
+    }
+}));
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Debug middleware
+app.use((req, res, next) => {
+    console.log('Session:', req.session);
+    console.log('User:', req.user);
+    next();
+});
 
 // Routes
-server.use("/api/users", userRoutes);
+app.use('/auth', authRoutes);
 
-// Start the server
-server.listen(PORT, (err) => {
-  if (err) {
-    console.error("Error starting server:", err);
-    return;
-  }
-  console.log(`Server started on port ${PORT}`);
+// Test endpoint
+app.get('/test', (req, res) => {
+    res.json({ message: 'Server is working' });
+});
+
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error('MongoDB connection error:', err));
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
