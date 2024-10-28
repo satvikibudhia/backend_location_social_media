@@ -23,18 +23,18 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   async (req, res) => {
-    // Check if this was a signup flow
-    if (req.session.authFlow === "signup") {
-      // If user already exists, redirect to login
-      const existingUser = await User.findOne({ googleId: req.user.googleId });
-      if (existingUser) {
-        return res.redirect("/login?error=User already exists, please login");
+    try {
+      // New user or login flow
+      if (req.session.authFlow === "signup") {
+        req.session.authFlow = null; // Clear authFlow after use
+        return res.redirect("/signup/complete");
       }
-      // New user, redirect to complete signup
-      res.redirect("/signup/complete");
-    } else {
-      // Login flow
-      res.redirect("http://localhost:3000/profile");
+
+      // Otherwise, proceed to profile (login flow)
+      res.redirect("http://localhost:3000/dashboard");
+    } catch (error) {
+      console.error("Error during Google callback:", error);
+      res.redirect("/login?error=Something went wrong, please try again");
     }
   }
 );
