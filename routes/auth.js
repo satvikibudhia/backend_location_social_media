@@ -81,4 +81,24 @@ router.get("/signup/user-data", (req, res) => {
   });
 });
 
+// Logout route
+router.get("/logout", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ error: "Failed to log out" });
+    }
+
+    // Destroy session after logout
+    req.session.destroy((destroyErr) => {
+      if (destroyErr) {
+        return res.status(500).json({ error: "Failed to destroy session" });
+      }
+      res.clearCookie("connect.sid"); // Clear session cookie
+      res.redirect("http://localhost:3000"); // Redirect to homepage or login page
+    });
+  });
+});
+
+
+
 module.exports = router;
