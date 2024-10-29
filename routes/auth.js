@@ -17,7 +17,26 @@ router.get(
   })
 );
 
-
+router.get("/current_user", (req, res) => {
+  if (req.user) {
+    res.json({
+      _id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      provider: req.user.provider,
+      type: req.user.type,
+      username: req.user.username,
+      bio: req.user.bio,
+      phone: req.user.phone,
+      dob: req.user.dob,
+      profilePic: req.user.profilePic,
+      isProfileComplete: req.user.isProfileComplete,
+      groupsJoined: req.user.groupsJoined,
+    });
+  } else {
+    res.status(401).json({ error: "Not authenticated" });
+  }
+});
 
 router.get(
   "/google/callback",
@@ -25,22 +44,22 @@ router.get(
   async (req, res) => {
     try {
       if (req.session.authFlow === "signup") {
-        req.session.authFlow = null; 
-        const user = await User.findById(req.user._id); 
+        req.session.authFlow = null;
+        const user = await User.findById(req.user._id);
         if (user) {
-          if (user.type === 'admin') {
-            return res.redirect("http://localhost:3000/admin"); 
+          if (user.type === "admin") {
+            return res.redirect("http://localhost:3000/admin");
           } else {
-            return res.redirect("http://localhost:3000/dashboard"); 
+            return res.redirect("http://localhost:3000/dashboard");
           }
         }
       }
-      const user = await User.findById(req.user._id); 
+      const user = await User.findById(req.user._id);
       if (user) {
-        if (user.type === 'admin') {
-          return res.redirect("http://localhost:3000/admin"); 
+        if (user.type === "admin") {
+          return res.redirect("http://localhost:3000/admin");
         } else {
-          return res.redirect("http://localhost:3000/dashboard"); 
+          return res.redirect("http://localhost:3000/dashboard");
         }
       }
     } catch (error) {
@@ -49,7 +68,6 @@ router.get(
     }
   }
 );
-
 
 // Complete signup route
 router.post("/complete-signup", async (req, res) => {
@@ -83,20 +101,18 @@ router.post("/complete-signup", async (req, res) => {
 
 // Get user data for completing signup
 // Fetch user data after successful Google auth
-router.get('/signup/user-data', async (req, res) => {
+router.get("/signup/user-data", async (req, res) => {
   if (req.isAuthenticated()) {
-      const user = req.user; // Assuming user is attached to req by passport
-      return res.json({
-          name: user.name,
-          email: user.email,
-          profilePic: user.profilePic,
-          type: user.type, // Include user type
-      });
+    const user = req.user; // Assuming user is attached to req by passport
+    return res.json({
+      name: user.name,
+      email: user.email,
+      profilePic: user.profilePic,
+      type: user.type, // Include user type
+    });
   }
-  return res.status(401).json({ error: 'Not authenticated' });
+  return res.status(401).json({ error: "Not authenticated" });
 });
-
-
 
 // Logout route
 router.get("/logout", (req, res) => {
@@ -115,6 +131,5 @@ router.get("/logout", (req, res) => {
     });
   });
 });
-
 
 module.exports = router;
