@@ -1,6 +1,7 @@
 // routes/locationRoutes.js
 const express = require("express");
-const Location = require("../models/Group"); // Import the Location model
+const Location = require("../models/Group"); 
+const User = require("../models/Users");
 
 const router = express.Router();
 
