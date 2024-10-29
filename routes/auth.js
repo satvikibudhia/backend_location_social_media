@@ -71,7 +71,7 @@ router.get(
 
 router.post("/update-profile", async (req, res) => {
   console.log("broom");
-  const { email, username, bio, profilePic } = req.body;
+  const { email, username, bio, profilePic,phone,dob, } = req.body;
 
   try {
     // Find the user by email and update fields
@@ -81,6 +81,9 @@ router.post("/update-profile", async (req, res) => {
         username: username,
         bio: bio,
         profilePic: profilePic, // Save the base64 string directly
+        phone:phone,
+        dob:dob,
+        
       },
       { new: true } // Return the updated document
     );
