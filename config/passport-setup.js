@@ -20,6 +20,7 @@ passport.use(new GoogleStrategy({
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.GOOGLE_CALLBACK_URL,
 },
+
 async (accessToken, refreshToken, profile, done) => {
   const existingUser = await User.findOne({ googleId: profile.id });
   if (existingUser) {
@@ -45,4 +46,6 @@ async (accessToken, refreshToken, profile, done) => {
   await newUser.save();
   done(null, newUser);
 }
+
+
 ));

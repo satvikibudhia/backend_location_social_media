@@ -17,6 +17,8 @@ router.get(
   })
 );
 
+
+
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
@@ -81,7 +83,7 @@ router.post("/complete-signup", async (req, res) => {
 
 // Get user data for completing signup
 // Fetch user data after successful Google auth
-router.get('/auth/signup/user-data', async (req, res) => {
+router.get('/signup/user-data', async (req, res) => {
   if (req.isAuthenticated()) {
       const user = req.user; // Assuming user is attached to req by passport
       return res.json({
@@ -113,7 +115,6 @@ router.get("/logout", (req, res) => {
     });
   });
 });
-
 
 
 module.exports = router;
