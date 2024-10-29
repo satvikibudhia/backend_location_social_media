@@ -69,6 +69,33 @@ router.get(
   }
 );
 
+router.post("/update-profile", async (req, res) => {
+  console.log("broom");
+  const { email, username, bio, profilePic } = req.body;
+
+  try {
+    // Find the user by email and update fields
+    const updatedUser = await User.findOneAndUpdate(
+      { email: email },
+      {
+        username: username,
+        bio: bio,
+        profilePic: profilePic, // Save the base64 string directly
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json(updatedUser); // Send the updated user data back to the client
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
 // Complete signup route
 router.post("/complete-signup", async (req, res) => {
   if (!req.user) {

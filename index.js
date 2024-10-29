@@ -10,7 +10,7 @@ const groupRoutes = require("./routes/groupRoutes");
 userRoutes = require("./routes/userRoutes"); // Import user routes
 require("./routes/groupRoutes");
 require("./config/passport-setup");
-
+const bodyParser = require("body-parser");
 const app = express();
 
 // CORS configuration - MUST COME BEFORE OTHER MIDDLEWARE
@@ -22,6 +22,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+app.use(bodyParser.json({ limit: "5mb" })); // Limit for JSON
+app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
 
 // Body parser middleware
 app.use(express.json());
