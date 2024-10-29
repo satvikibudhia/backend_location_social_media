@@ -6,6 +6,7 @@ const passport = require('passport');
 const cors = require('cors');
 const MongoStore = require('connect-mongo');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/userRoutes'); // Import user routes
 require('./config/passport-setup');
 
 const app = express();
@@ -52,6 +53,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/user', userRoutes); // Add user routes
 
 // Test endpoint
 app.get('/test', (req, res) => {

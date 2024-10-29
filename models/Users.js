@@ -1,4 +1,3 @@
-// Users.js
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
@@ -18,7 +17,11 @@ const userSchema = new mongoose.Schema({
     required: true,
     enum: ["google", "local"],
   },
-  type:{ type: String, enum: ["user", "admin"], default: "user" },
+  type: { 
+    type: String, 
+    enum: ["user", "admin"], 
+    default: "user" 
+  },
   googleId: {
     type: String,
     sparse: true,
@@ -44,6 +47,14 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  longitude: {
+    type: Number,
+    required: false,
+  },
+  latitude: {
+    type: Number,
+    required: false,
   },
 });
 
