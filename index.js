@@ -8,6 +8,7 @@ const MongoStore = require("connect-mongo");
 const authRoutes = require("./routes/auth");
 const groupRoutes = require("./routes/groupRoutes");
 userRoutes = require("./routes/userRoutes"); // Import user routes
+const locationRoutes = require("./routes/locationRoutes");
 require("./routes/groupRoutes");
 require("./config/passport-setup");
 const bodyParser = require("body-parser");
@@ -63,6 +64,7 @@ app.use((req, res, next) => {
 app.use("/auth", authRoutes);
 app.use("/location", groupRoutes);
 app.use("/user", userRoutes); // Add user routes
+app.use("/nearby", locationRoutes);
 
 // Test endpoint
 app.get("/test", (req, res) => {

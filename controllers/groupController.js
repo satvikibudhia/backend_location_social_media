@@ -1,19 +1,27 @@
 const axios = require("axios");
 const Location = require("../models/Group"); // Import the Location model
 
+// OpenCage API key (replace 'YOUR_OPENCAGE_API_KEY' with your actual API key)
+const OPEN_CAGE_API_KEY = "5a17a8e13a8440a3999c6e755262560d";
+
 exports.fetchAndSaveLocations = async (req, res) => {
   const { city, category } = req.body;
 
-  // Replace with the actual coordinates based on the city
-  // For demonstration, using hardcoded coordinates
-  const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];node["amenity"~"${category}"](18.3953,73.7111,18.7394,73.9424);out body;`;
-
   try {
-    // Fetch data from Overpass API
-    const response = await axios.get(overpassUrl);
-    const locations = response.data.elements;
+    // Step 1: Fetch the bounding box for the city from OpenCage API
+    const openCageUrl = `https://api.opencagedata.com/geocode/v1/json?q=${city}&key=${OPEN_CAGE_API_KEY}`;
+    const openCageResponse = await axios.get(openCageUrl);
 
-    // Map the fetched locations to match the model schema
+    const bounds = openCageResponse.data.results[0].bounds;
+    const northeast = bounds.northeast;
+    const southwest = bounds.southwest;
+
+    // Step 2: Use the bounding box with Overpass API to fetch locations
+    const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];node["amenity"~"${category}"](${southwest.lat},${southwest.lng},${northeast.lat},${northeast.lng});out body;`;
+    const overpassResponse = await axios.get(overpassUrl);
+    const locations = overpassResponse.data.elements;
+
+    // Step 3: Map the fetched locations to match the Location schema
     const locationDocs = locations.map((loc) => ({
       city, // Use the city from the request
       category, // Use the category from the request
@@ -26,7 +34,7 @@ exports.fetchAndSaveLocations = async (req, res) => {
       createdAt: new Date(), // Timestamp of when the entry is created
     }));
 
-    // Save all locations to the database
+    // Step 4: Save all locations to the database
     await Location.insertMany(locationDocs);
 
     res
