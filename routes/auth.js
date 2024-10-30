@@ -3,8 +3,9 @@ const express = require("express");
 const passport = require("passport");
 const User = require("../models/Users");
 const Post = require("../models/Posts");
+const Group = require("../models/Group");
 const mongoose = require("mongoose");
-const multer = require('multer');
+const multer = require("multer");
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -76,7 +77,7 @@ router.get(
 
 router.post("/update-profile", async (req, res) => {
   console.log("broom");
-  const { email, username, bio, profilePic,phone,dob, } = req.body;
+  const { email, username, bio, profilePic, phone, dob } = req.body;
 
   try {
     // Find the user by email and update fields
@@ -86,9 +87,8 @@ router.post("/update-profile", async (req, res) => {
         username: username,
         bio: bio,
         profilePic: profilePic, // Save the base64 string directly
-        phone:phone,
-        dob:dob,
-        
+        phone: phone,
+        dob: dob,
       },
       { new: true } // Return the updated document
     );
@@ -167,37 +167,34 @@ router.get("/logout", (req, res) => {
   });
 });
 
-
-router.post("/create-post", upload.single("img"), async (req, res) => {
-  const { username, groupId, imgdesc } = req.body;
-
-  // Basic validation
-  if (!username || !groupId || !imgdesc) {
-    return res.status(400).json({ error: "All fields are required." });
-  }
-
-  // Convert uploaded image to base64
-  const imgBase64 = req.file.buffer.toString("base64");
-  if (Buffer.byteLength(imgBase64, 'base64') > 65536) { // 64KB check
-    return res.status(400).json({ error: "Image exceeds 64KB limit." });
+router.post("/create-post", async (req, res) => {
+  const { username, groupId, img, imgdesc } = req.body;
+  console.log("Received request body:", req.body);
+  if (!username || !groupId || !img || !imgdesc) {
+    return res.status(400).json({ message: "All fields are required." });
   }
 
   try {
-    // Validate groupId
-    const objectId = mongoose.Types.ObjectId(groupId);
-    
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found." });
+    }
     const newPost = new Post({
       username,
-      groupId: objectId,
-      img: imgBase64,
+      groupId,
+      img,
       imgdesc,
+      likeCounter: 0,
+      comments: [],
     });
-    
-    await newPost.save();
-    res.status(201).json({ message: "Post created successfully!", post: newPost }); // Include the created post
+    // Save the post to the database
+    const savedPost = await newPost.save();
+    res.status(201).json(savedPost);
   } catch (error) {
-    console.error("Error creating post:", error);
-    res.status(500).json({ error: "Failed to create post" });
+    console.error("Error saving post:", error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while saving the post." });
   }
 });
 
