@@ -2,7 +2,12 @@
 const express = require("express");
 const passport = require("passport");
 const User = require("../models/Users");
+const Post = require("../models/Posts");
+const mongoose = require("mongoose");
+const multer = require('multer');
+
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Google OAuth route
 router.get(
@@ -160,6 +165,40 @@ router.get("/logout", (req, res) => {
       res.redirect("http://localhost:3000"); // Redirect to homepage or login page
     });
   });
+});
+
+
+router.post("/create-post", upload.single("img"), async (req, res) => {
+  const { username, groupId, imgdesc } = req.body;
+
+  // Basic validation
+  if (!username || !groupId || !imgdesc) {
+    return res.status(400).json({ error: "All fields are required." });
+  }
+
+  // Convert uploaded image to base64
+  const imgBase64 = req.file.buffer.toString("base64");
+  if (Buffer.byteLength(imgBase64, 'base64') > 65536) { // 64KB check
+    return res.status(400).json({ error: "Image exceeds 64KB limit." });
+  }
+
+  try {
+    // Validate groupId
+    const objectId = mongoose.Types.ObjectId(groupId);
+    
+    const newPost = new Post({
+      username,
+      groupId: objectId,
+      img: imgBase64,
+      imgdesc,
+    });
+    
+    await newPost.save();
+    res.status(201).json({ message: "Post created successfully!", post: newPost }); // Include the created post
+  } catch (error) {
+    console.error("Error creating post:", error);
+    res.status(500).json({ error: "Failed to create post" });
+  }
 });
 
 module.exports = router;
