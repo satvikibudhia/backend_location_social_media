@@ -1,12 +1,13 @@
 const express = require("express");
 const Post = require("../models/Posts");
 const Group = require("../models/Group");
+const Users = require("../models/Users");
 const router = express.Router();
 
 router.post("/create-post", async (req, res) => {
-  const { username, groupId, img, imgdesc } = req.body;
+  const { userId, groupId, img, imgdesc } = req.body;
   console.log("Received request body:", req.body);
-  if (!username || !groupId || !img || !imgdesc) {
+  if (!userId || !groupId || !img || !imgdesc) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
@@ -15,8 +16,13 @@ router.post("/create-post", async (req, res) => {
     if (!group) {
       return res.status(404).json({ message: "Group not found." });
     }
+    const user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    console.log("reached:");
     const newPost = new Post({
-      username,
+      userId,
       groupId,
       img,
       imgdesc,

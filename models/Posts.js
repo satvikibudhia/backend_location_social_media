@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 
 const postSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: [true, "Username is required."],
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "users",
   },
   groupId: {
     type: mongoose.Schema.Types.ObjectId,

@@ -169,34 +169,4 @@ router.get("/logout", (req, res) => {
   });
 });
 
-router.post("/create-post", async (req, res) => {
-  const { username, groupId, img, imgdesc } = req.body;
-  console.log("Received request body:", req.body);
-  if (!username || !groupId || !img || !imgdesc) {
-    return res.status(400).json({ message: "All fields are required." });
-  }
-
-  try {
-    const group = await Group.findById(groupId);
-    if (!group) {
-      return res.status(404).json({ message: "Group not found." });
-    }
-    const newPost = new Post({
-      username,
-      groupId,
-      img,
-      imgdesc,
-      likeCounter: 0,
-      comments: [],
-    });
-    const savedPost = await newPost.save();
-    res.status(201).json(savedPost);
-  } catch (error) {
-    console.error("Error saving post:", error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while saving the post." });
-  }
-});
-
 module.exports = router;
