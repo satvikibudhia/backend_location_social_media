@@ -7,17 +7,16 @@ const cors = require("cors");
 const MongoStore = require("connect-mongo");
 const authRoutes = require("./routes/auth");
 const groupRoutes = require("./routes/groupRoutes");
-userRoutes = require("./routes/userRoutes"); // Import user routes
+userRoutes = require("./routes/userRoutes");
 const locationRoutes = require("./routes/locationRoutes");
-require("./routes/groupRoutes");
+const postRoutes = require("./routes/postRoutes");
 require("./config/passport-setup");
 const bodyParser = require("body-parser");
 const app = express();
 
-// CORS configuration - MUST COME BEFORE OTHER MIDDLEWARE
 app.use(
   cors({
-    origin: "http://localhost:3000", // Your React app URL
+    origin: "http://localhost:3000",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -54,17 +53,20 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Debug middleware
+/*
 app.use((req, res, next) => {
   console.log("Session:", req.session);
   console.log("User:", req.user);
   next();
 });
+*/
 
 // Routes
 app.use("/auth", authRoutes);
 app.use("/location", groupRoutes);
-app.use("/user", userRoutes); // Add user routes
+app.use("/user", userRoutes);
 app.use("/nearby", locationRoutes);
+app.use("/post", postRoutes);
 
 // Test endpoint
 app.get("/test", (req, res) => {

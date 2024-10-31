@@ -45,8 +45,7 @@ const postSchema = new mongoose.Schema({
   },
 });
 
-// Adding indexes for optimization
-postSchema.index({ groupId: 1, createdAt: -1 }); // Index for quick retrieval by groupId and date
+postSchema.index({ groupId: 1, createdAt: -1 });
 
 const Post = mongoose.model("Post", postSchema);
 

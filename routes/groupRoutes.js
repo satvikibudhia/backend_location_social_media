@@ -1,4 +1,3 @@
-// routes/locationRoutes.js
 const express = require("express");
 const { fetchAndSaveLocations } = require("../controllers/groupController");
 

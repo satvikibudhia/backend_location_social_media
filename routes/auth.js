@@ -1,4 +1,3 @@
-// auth.js
 const express = require("express");
 const passport = require("passport");
 const User = require("../models/Users");
@@ -6,11 +5,26 @@ const Post = require("../models/Posts");
 const Group = require("../models/Group");
 const mongoose = require("mongoose");
 const multer = require("multer");
-
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Google OAuth route
+const auth = (req, res, next) => {
+  const token = req.cookies.token || req.header("Authorization");
+
+  if (!token) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = verified;
+    next();
+  } catch (error) {
+    res.status(400).json({ error: "Invalid token" });
+  }
+};
+
 router.get(
   "/google",
   (req, res, next) => {
@@ -46,28 +60,22 @@ router.get("/current_user", (req, res) => {
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  passport.authenticate("google", { failureRedirect: "/" }),
   async (req, res) => {
     try {
-      if (req.session.authFlow === "signup") {
-        req.session.authFlow = null;
-        const user = await User.findById(req.user._id);
-        if (user) {
-          if (user.type === "admin") {
-            return res.redirect("http://localhost:3000/admin");
-          } else {
-            return res.redirect("http://localhost:3000/dashboard");
-          }
+      const token = jwt.sign(
+        { id: req.user.accessToken },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1h",
         }
-      }
+      );
+      console.log("token:", token);
       const user = await User.findById(req.user._id);
-      if (user) {
-        if (user.type === "admin") {
-          return res.redirect("http://localhost:3000/admin");
-        } else {
-          return res.redirect("http://localhost:3000/dashboard");
-        }
-      }
+      console.log("user:", user);
+      const redirectUrl = `http://localhost:3000/tokenhandlerUser?token=${token}`;
+      console.log("redirecting to login", redirectUrl);
+      res.redirect(redirectUrl);
     } catch (error) {
       console.error("Error during Google callback:", error);
       res.redirect("/login?error=Something went wrong, please try again");
@@ -80,31 +88,29 @@ router.post("/update-profile", async (req, res) => {
   const { email, username, bio, profilePic, phone, dob } = req.body;
 
   try {
-    // Find the user by email and update fields
     const updatedUser = await User.findOneAndUpdate(
       { email: email },
       {
         username: username,
         bio: bio,
-        profilePic: profilePic, // Save the base64 string directly
+        profilePic: profilePic,
         phone: phone,
         dob: dob,
       },
-      { new: true } // Return the updated document
+      { new: true }
     );
 
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json(updatedUser); // Send the updated user data back to the client
+    res.status(200).json(updatedUser);
   } catch (error) {
     console.error("Error updating profile:", error);
     res.status(500).json({ error: "Failed to update profile" });
   }
 });
 
-// Complete signup route
 router.post("/complete-signup", async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ error: "Not authenticated" });
@@ -122,7 +128,7 @@ router.post("/complete-signup", async (req, res) => {
         dob,
         groupsJoined: groupsJoined || [],
         isProfileComplete: true,
-        profilePic: req.user.profilePic, // Save the profile picture from Google
+        profilePic: req.user.profilePic,
       },
       { new: true }
     );
@@ -134,35 +140,31 @@ router.post("/complete-signup", async (req, res) => {
   }
 });
 
-// Get user data for completing signup
-// Fetch user data after successful Google auth
 router.get("/signup/user-data", async (req, res) => {
   if (req.isAuthenticated()) {
-    const user = req.user; // Assuming user is attached to req by passport
+    const user = req.user;
     return res.json({
       name: user.name,
       email: user.email,
       profilePic: user.profilePic,
-      type: user.type, // Include user type
+      type: user.type,
     });
   }
   return res.status(401).json({ error: "Not authenticated" });
 });
 
-// Logout route
 router.get("/logout", (req, res) => {
   req.logout((err) => {
     if (err) {
       return res.status(500).json({ error: "Failed to log out" });
     }
 
-    // Destroy session after logout
     req.session.destroy((destroyErr) => {
       if (destroyErr) {
         return res.status(500).json({ error: "Failed to destroy session" });
       }
-      res.clearCookie("connect.sid"); // Clear session cookie
-      res.redirect("http://localhost:3000"); // Redirect to homepage or login page
+      res.clearCookie("connect.sid");
+      res.redirect("http://localhost:3000");
     });
   });
 });
@@ -187,7 +189,6 @@ router.post("/create-post", async (req, res) => {
       likeCounter: 0,
       comments: [],
     });
-    // Save the post to the database
     const savedPost = await newPost.save();
     res.status(201).json(savedPost);
   } catch (error) {
