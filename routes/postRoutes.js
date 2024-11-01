@@ -158,4 +158,59 @@ router.post("/addComment", async (req, res) => {
   }
 });
 
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of Earth in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+router.post("/getAllPostByDistance", async (req, res) => {
+  const { latitude, longitude } = req.body;
+
+  if (latitude == null || longitude == null) {
+    return res
+      .status(400)
+      .json({ message: "Latitude and longitude are required." });
+  }
+
+  try {
+    // Fetch all posts and their associated group details
+    const allPosts = await Post.find().populate("groupId");
+
+    // Calculate the distance for each post's group location from user's location
+    const postsWithDistance = allPosts
+      .map((post) => {
+        const groupLocation = post.groupId.coordinates;
+        const distance = calculateDistance(
+          latitude,
+          longitude,
+          groupLocation.latitude,
+          groupLocation.longitude
+        );
+        return { ...post.toObject(), distance };
+      })
+      .sort((a, b) => a.distance - b.distance); // Sort by closest distance
+
+    res.status(200).json({
+      message: "Posts fetched successfully by distance",
+      data: postsWithDistance,
+    });
+  } catch (error) {
+    console.error("Error fetching posts by distance:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+});
+
 module.exports = router;
