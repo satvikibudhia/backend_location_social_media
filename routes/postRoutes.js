@@ -10,7 +10,6 @@ router.post("/create-post", async (req, res) => {
   if (!userId || !groupId || !img || !imgdesc) {
     return res.status(400).json({ message: "All fields are required." });
   }
-
   try {
     const group = await Group.findById(groupId);
     if (!group) {
@@ -20,6 +19,13 @@ router.post("/create-post", async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+    const distance = calculateDistance(
+      user.latitude,
+      user.longitude,
+      group.latitude,
+      group.longitude
+    );
+    const fromSameLocation = distance <= 1;
     console.log("reached:");
     const newPost = new Post({
       userId,
@@ -28,6 +34,7 @@ router.post("/create-post", async (req, res) => {
       imgdesc,
       likeCounter: 0,
       comments: [],
+      fromSameLocation,
     });
     const savedPost = await newPost.save();
     res.status(201).json(savedPost);

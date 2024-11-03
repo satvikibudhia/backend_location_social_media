@@ -44,6 +44,10 @@ const postSchema = new mongoose.Schema({
       },
     },
   ],
+  fromSameLocation: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
