@@ -10,7 +10,7 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 const auth = (req, res, next) => {
-    const token = req.cookies.token || req.header("Authorization").replace("Bearer ", "");
+    const token = req.cookies.token || req.header("Authorization");
 
     if (!token) {
         return res.status(401).json({ error: "Not authenticated" });
@@ -37,7 +37,7 @@ router.get(
     })
 );
 
-router.get("/current_user", auth, (req, res) => {
+router.get("/current_user", (req, res) => {
     if (req.user) {
         res.json({
             _id: req.user._id,
