@@ -22,9 +22,10 @@ router.post("/create-post", async(req, res) => {
         const distance = calculateDistance(
             user.latitude,
             user.longitude,
-            group.latitude,
-            group.longitude
+            group.coordinates.latitude,
+            group.coordinates.longitude
         );
+
         const fromSameLocation = distance <= 1;
         console.log("reached:");
         const newPost = new Post({
