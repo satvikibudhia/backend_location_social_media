@@ -15,12 +15,12 @@ const bodyParser = require("body-parser");
 const app = express();
 
 app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
+    cors({
+        origin: "*",
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+    })
 );
 app.use(bodyParser.json({ limit: "5mb" })); // Limit for JSON
 app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
@@ -31,21 +31,21 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session configuration
 app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "your_session_secret",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      collectionName: "sessions",
-    }),
-    cookie: {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      httpOnly: true,
-      secure: false, // set to true in production with HTTPS
-      sameSite: "lax",
-    },
-  })
+    session({
+        secret: process.env.SESSION_SECRET || "your_session_secret",
+        resave: false,
+        saveUninitialized: false,
+        store: MongoStore.create({
+            mongoUrl: process.env.MONGO_URI,
+            collectionName: "sessions",
+        }),
+        cookie: {
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
+            httpOnly: true,
+            secure: false, // set to true in production with HTTPS
+            sameSite: "lax",
+        },
+    })
 );
 
 // Passport middleware
@@ -70,16 +70,16 @@ app.use("/post", postRoutes);
 
 // Test endpoint
 app.get("/test", (req, res) => {
-  res.json({ message: "Server is working" });
+    res.json({ message: "Server is working" });
 });
 
 // MongoDB connection
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+    .connect(process.env.MONGO_URI)
+    .then(() => console.log("MongoDB connected"))
+    .catch((err) => console.error("MongoDB connection error:", err));
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
