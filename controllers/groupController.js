@@ -4,7 +4,7 @@ const Location = require("../models/Group");
 const OPEN_CAGE_API_KEY = "5a17a8e13a8440a3999c6e755262560d";
 
 exports.fetchAndSaveLocations = async (req, res) => {
-  const { city, category } = req.body;
+  const { city, category, mainCategory } = req.body;
   try {
     const openCageUrl = `https://api.opencagedata.com/geocode/v1/json?q=${city}&key=${OPEN_CAGE_API_KEY}`;
     const openCageResponse = await axios.get(openCageUrl);
@@ -12,8 +12,18 @@ exports.fetchAndSaveLocations = async (req, res) => {
     const bounds = openCageResponse.data.results[0].bounds;
     const northeast = bounds.northeast;
     const southwest = bounds.southwest;
+    console.log(
+      "coordinaties",
+      southwest.lat,
+      southwest.lng,
+      northeast.lat,
+      northeast.lng,
+      city,
+      category,
+      mainCategory
+    );
 
-    const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];node["amenity"~"${category}"](${southwest.lat},${southwest.lng},${northeast.lat},${northeast.lng});out body;`;
+    const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];node["${mainCategory}"~"${category}"](${southwest.lat},${southwest.lng},${northeast.lat},${northeast.lng});out body;`;
     const overpassResponse = await axios.get(overpassUrl);
     const locations = overpassResponse.data.elements;
     const locationDocs = locations.map((loc) => ({
