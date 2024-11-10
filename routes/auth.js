@@ -82,7 +82,7 @@ router.get(
         );
         console.log("Token generated:", token);
   
-        const redirectUrl = `http://localhost:3000/tokenhandlerUser?token=${token}`;
+        const redirectUrl = `https://geogramsit.netlify.app/tokenhandlerUser?token=${token}`;
         console.log("Redirecting to:", redirectUrl);
   
         // Redirect with token
@@ -168,7 +168,7 @@ router.get("/logout", (req, res) => {
                 return res.status(500).json({ error: "Failed to destroy session" });
             }
             res.clearCookie("connect.sid");
-            res.redirect("http://localhost:3000");
+            res.redirect("https://geogramsit.netlify.app");
         });
     });
 });
