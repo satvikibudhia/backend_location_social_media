@@ -43,7 +43,7 @@ router.get("/current_user", verifyToken, async (req, res) => {
 
     try {
         // Retrieve user by _id
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user.id);
 
         if (user) {
             res.json({
