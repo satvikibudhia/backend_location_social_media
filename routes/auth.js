@@ -38,25 +38,34 @@ const verifyToken = (req, res, next) => {
 };
 
 // Apply the middleware to your protected routes
-router.get("/current_user", verifyToken, (req, res) => {
-    console.log("Authorization header:", req.headers["authorization"],req.user);
-    if (req.user) {
-        res.json({
-            _id: req.user._id,
-            name: req.user.name,
-            email: req.user.email,
-            provider: req.user.provider,
-            type: req.user.type,
-            username: req.user.username,
-            bio: req.user.bio,
-            phone: req.user.phone,
-            dob: req.user.dob,
-            profilePic: req.user.profilePic,
-            isProfileComplete: req.user.isProfileComplete,
-            groupsJoined: req.user.groupsJoined,
-        });
-    } else {
-        res.status(401).json({ error: "Not authenticated" });
+router.get("/current_user", verifyToken, async (req, res) => {
+    console.log("Authorization header:", req.headers["authorization"], req.user);
+
+    try {
+        // Retrieve user by _id
+        const user = await User.findById(req.user._id);
+
+        if (user) {
+            res.json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                provider: user.provider,
+                type: user.type,
+                username: user.username,
+                bio: user.bio,
+                phone: user.phone,
+                dob: user.dob,
+                profilePic: user.profilePic,
+                isProfileComplete: user.isProfileComplete,
+                groupsJoined: user.groupsJoined,
+            });
+        } else {
+            res.status(404).json({ error: "User not found" });
+        }
+    } catch (err) {
+        console.error("Error retrieving user:", err);
+        res.status(500).json({ error: "Failed to fetch user" });
     }
 });
 
