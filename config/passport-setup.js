@@ -26,20 +26,21 @@ passport.serializeUser((user, done) => {
     }
 
     debug("Serialized user ID:", idToStore);
-    done(null, idToStore);
+    done(null, userObject); // Store the full user object (not just the ID)
   } catch (err) {
     debug("Serialization error:", err);
     done(err, null);
   }
 });
 
-passport.deserializeUser(async (id, done) => {
-  debug("Deserializing user ID:", id);
+passport.deserializeUser(async (userObject, done) => {
+  debug("Deserializing user:", userObject);
 
   try {
-    const user = await User.findById(id);
+    // Use the stored user object instead of just the ID
+    const user = await User.findById(userObject._id);
     if (!user) {
-      debug("No user found with ID:", id);
+      debug("No user found with ID:", userObject._id);
       return done(null, false);
     }
     debug("Deserialized user:", user);
@@ -66,11 +67,11 @@ passport.use(
 
         if (user) {
           debug("Existing user found:", user._id);
-          const userWithToken = {
+          user = {
             ...user.toObject(),
             accessToken,
           };
-          return done(null, userWithToken);
+          return done(null, user); // Pass the complete user object
         }
 
         debug("Creating new user for Google ID:", profile.id);
@@ -106,7 +107,7 @@ passport.use(
           accessToken,
         };
 
-        done(null, newUserWithToken);
+        done(null, newUserWithToken); // Pass the complete user object with the accessToken
       } catch (error) {
         debug("Google strategy error:", error);
         done(error, null);

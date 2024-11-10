@@ -63,24 +63,27 @@ router.get("/current_user", verifyToken, (req, res) => {
 router.get(
     "/google/callback",
     passport.authenticate("google", { failureRedirect: "/" }),
-    async(req, res) => {
-        try {
-            const token = jwt.sign({ id: req.user.accessToken }, process.env.JWT_SECRET, {
-                expiresIn: "1h",
-            });
-            console.log("Token generated:", token);
-            const user = await User.findById(req.user._id);
-            console.log("user:", user);
-            const redirectUrl = `http://localhost:3000/tokenhandlerUser?token=${token}`;
-            console.log("redirecting to login", redirectUrl);
-            res.redirect(redirectUrl);
-        } catch (error) {
-            console.error("Error during Google callback:", error);
-            res.redirect("/login?error=Something went wrong, please try again");
-        }
+    async (req, res) => {
+      try {
+        // Create a JWT token and attach user data
+        const token = jwt.sign(
+          { id: req.user._id, email: req.user.email, name: req.user.name }, 
+          process.env.JWT_SECRET, 
+          { expiresIn: "1h" }
+        );
+        console.log("Token generated:", token);
+  
+        const redirectUrl = `http://localhost:3000/tokenhandlerUser?token=${token}`;
+        console.log("Redirecting to:", redirectUrl);
+  
+        // Redirect with token
+        res.redirect(redirectUrl);
+      } catch (error) {
+        console.error("Error during Google callback:", error);
+        res.redirect("/login?error=Something went wrong, please try again");
+      }
     }
-);
-
+  );
 router.post("/update-profile", async(req, res) => {
     console.log("broom");
     const { email, username, bio, profilePic, phone, dob } = req.body;
