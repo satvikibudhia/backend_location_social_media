@@ -27,7 +27,10 @@ router.post("/create-post", async(req, res) => {
         );
 
         const fromSameLocation = distance <= 1;
-        console.log("reached:");
+        console.log(user.latitude,
+            user.longitude,
+            group.coordinates.latitude,
+            group.coordinates.longitude);
         const newPost = new Post({
             userId,
             groupId,
