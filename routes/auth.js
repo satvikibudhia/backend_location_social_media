@@ -39,7 +39,7 @@ const verifyToken = (req, res, next) => {
 
 // Apply the middleware to your protected routes
 router.get("/current_user", verifyToken, (req, res) => {
-    console.log("Authorization header:", req.headers["authorization"],req.user);
+    console.log("Authorization header:", req.headers["authorization"],req.user.accessToken);
     if (req.user) {
         res.json({
             _id: req.user._id,
