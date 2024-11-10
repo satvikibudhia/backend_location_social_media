@@ -42,7 +42,7 @@ router.get(
     })
 );
 
-outer.get("/current_user", auth, (req, res) => {
+router.get("/current_user", auth, (req, res) => {
     console.log("Accessing current_user with user:", req.user); // Debug log for req.user
 
     if (req.user) {
