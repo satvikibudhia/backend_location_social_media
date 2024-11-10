@@ -16,7 +16,7 @@ const app = express();
 
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: process.env.FRONTEND_URL || "http://localhost:3000", // Use dynamic origin
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
@@ -42,8 +42,8 @@ app.use(
         cookie: {
             maxAge: 24 * 60 * 60 * 1000, // 24 hours
             httpOnly: true,
-            secure: false, // set to true in production with HTTPS
-            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production", // true for production
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // 'none' for cross-site cookies in production
         },
     })
 );

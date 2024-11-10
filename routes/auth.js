@@ -22,7 +22,6 @@ router.get(
 );
 
 router.get("/current_user", (req, res) => {
-    console.log(req);
     if (req.user) {
         res.json({
             _id: req.user._id,
@@ -48,12 +47,10 @@ router.get(
     passport.authenticate("google", { failureRedirect: "/" }),
     async(req, res) => {
         try {
-            const token = jwt.sign({ id: req.user.accessToken },
-                process.env.JWT_SECRET, {
-                    expiresIn: "1h",
-                }
-            );
-            console.log("token:", token);
+            const token = jwt.sign({ id: req.user.accessToken }, process.env.JWT_SECRET, {
+                expiresIn: "1h",
+            });
+            console.log("Token generated:", token);
             const user = await User.findById(req.user._id);
             console.log("user:", user);
             const redirectUrl = `http://localhost:3000/tokenhandlerUser?token=${token}`;
