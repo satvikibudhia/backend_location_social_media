@@ -11,19 +11,24 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const auth = (req, res, next) => {
     const token = req.cookies.token || req.header("Authorization");
+    console.log("Received token:", token); // Debug log for token
 
     if (!token) {
+        console.log("No token provided."); // Debug log
         return res.status(401).json({ error: "Not authenticated" });
     }
 
     try {
         const verified = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("Token verified, user:", verified); // Debug log for verified payload
         req.user = verified;
         next();
     } catch (error) {
+        console.error("Token verification failed:", error); // Debug log for errors
         res.status(400).json({ error: "Invalid token" });
     }
 };
+
 
 router.get(
     "/google",
@@ -37,7 +42,9 @@ router.get(
     })
 );
 
-router.get("/current_user", (req, res) => {
+outer.get("/current_user", auth, (req, res) => {
+    console.log("Accessing current_user with user:", req.user); // Debug log for req.user
+
     if (req.user) {
         res.json({
             _id: req.user._id,
@@ -54,6 +61,7 @@ router.get("/current_user", (req, res) => {
             groupsJoined: req.user.groupsJoined,
         });
     } else {
+        console.log("User not authenticated"); // Debug log if req.user is not set
         res.status(401).json({ error: "Not authenticated" });
     }
 });
@@ -63,19 +71,20 @@ router.get(
     passport.authenticate("google", { failureRedirect: "/" }),
     async(req, res) => {
         try {
-            const token = jwt.sign({ id: req.user.accessToken },
-                process.env.JWT_SECRET, {
-                    expiresIn: "1h",
-                }
+            const token = jwt.sign({ id: req.user._id }, // Make sure `req.user._id` is used, not accessToken
+                process.env.JWT_SECRET, { expiresIn: "1h" }
             );
-            console.log("token:", token);
+            console.log("Generated JWT token:", token); // Debug log for JWT token
+
             const user = await User.findById(req.user._id);
-            console.log("user:", user);
+            console.log("User found in database:", user); // Debug log for user
+
             const redirectUrl = `http://localhost:3000/tokenhandlerUser?token=${token}`;
-            console.log("redirecting to login", redirectUrl);
+            console.log("Redirecting to:", redirectUrl); // Debug log for redirect URL
+
             res.redirect(redirectUrl);
         } catch (error) {
-            console.error("Error during Google callback:", error);
+            console.error("Error during Google callback:", error); // Debug log for callback error
             res.redirect("/login?error=Something went wrong, please try again");
         }
     }
