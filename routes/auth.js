@@ -21,7 +21,27 @@ router.get(
     })
 );
 
-router.get("/current_user", (req, res) => {
+const jwt = require('jsonwebtoken');
+
+const verifyToken = (req, res, next) => {
+    const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from Bearer
+
+    if (!token) {
+        return res.status(401).json({ error: "No token provided" });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ error: "Token is not valid" });
+        }
+        req.user = decoded; // Store decoded user data into req.user
+        next();
+    });
+};
+
+// Apply the middleware to your protected routes
+router.get("/current_user", verifyToken, (req, res) => {
+    console.log("Authorization header:", req.headers["authorization"]);
     if (req.user) {
         res.json({
             _id: req.user._id,
