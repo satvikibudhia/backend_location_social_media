@@ -5,7 +5,7 @@ const Users = require("../models/Users");
 const router = express.Router();
 
 router.post("/create-post", async(req, res) => {
-    const { userId, groupId, img, imgdesc } = req.body;
+    const { userId, groupId, img, imgdesc, latitude, longitude } = req.body;
     console.log("Received request body:", req.body);
     if (!userId || !groupId || !img || !imgdesc) {
         return res.status(400).json({ message: "All fields are required." });
@@ -21,15 +21,15 @@ router.post("/create-post", async(req, res) => {
         }
         console.log(user);
         const distance = calculateDistance(
-            user.latitude,
-            user.longitude,
+            latitude,
+            longitude,
             group.coordinates.latitude,
             group.coordinates.longitude
         );
 
         const fromSameLocation = distance <= 1;
-        console.log(user.latitude,
-            user.longitude,
+        console.log(latitude,
+            longitude,
             group.coordinates.latitude,
             group.coordinates.longitude);
         const newPost = new Post({
