@@ -31,7 +31,7 @@ router.post("/join-group", async(req, res) => {
     }
 });
 
-router.get("/UserbyId", async(req, res) => {
+router.post("/UserbyId", async(req, res) => {
     const { userID } = req.body;
     try {
         const user = await User.findById(userID);
