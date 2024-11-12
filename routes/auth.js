@@ -82,7 +82,7 @@ router.get(
         );
         console.log("Token generated:", token);
   
-        const redirectUrl = `https://geogramsit.netlify.app/tokenhandlerUser?token=${token}`;
+        const redirectUrl = `http://localhost:3000/tokenhandlerUser?token=${token}`;
         console.log("Redirecting to:", redirectUrl);
   
         // Redirect with token
