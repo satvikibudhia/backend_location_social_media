@@ -101,6 +101,27 @@ router.post("/getAllPostByUserId", async(req, res) => {
     }
 });
 
+router.post("/deletePost", async(req, res) => {
+    const { postId } = req.body;
+    try {
+        const updatedPost = await Post.deleteOne({_id: postId});
+
+        if (!updatedPost) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        res.status(200).json({
+            message: "Post deleted successfully",
+            data: updatedPost,
+        });
+    } catch (error) {
+        console.error("Error adding comment:", error);
+        res
+            .status(500)
+            .json({ message: "Internal server error", error: error.message });
+    }
+});
+
 router.post("/likeOnPost", async(req, res) => {
     const { postId, userId } = req.body;
 
