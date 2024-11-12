@@ -36,7 +36,7 @@ router.post("/UserbyId", async(req, res) => {
     try {
         const user = await User.findById(userID);
         if (user) {
-            res.json({
+            res.status(200).json({
                 _id: user._id,
                 name: user.name,
                 email: user.email,
@@ -53,12 +53,12 @@ router.post("/UserbyId", async(req, res) => {
         } else {
             res.status(404).json({ error: "User not found" });
         }
-        res.status(200).json(user);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
     }
 });
+
 
 router.post("/update-location", async(req, res) => {
     const { email, latitude, longitude } = req.body;
